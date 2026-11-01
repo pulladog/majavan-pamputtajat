@@ -100,4 +100,102 @@ let sortKey='points', desc=true;
 const tbody=document.getElementById('rows');
 function render(){const list=[...players].sort((a,b)=>{const x=a[sortKey],y=b[sortKey];if(sortKey==='points'){return (b.points-a.points)||(b.goals-a.goals)||a.name.localeCompare(b.name,'fi')}return (typeof x==='string'?x.localeCompare(y,'fi'):x-y)*(desc?-1:1)||(b.points-a.points)||(b.goals-a.goals)||a.name.localeCompare(b.name,'fi')});tbody.innerHTML='';list.forEach((p,i)=>{const tr=document.createElement('tr');if(i<3)tr.className='top3';const vals=[i+1,p.name,p.games,p.goals,p.assists,p.points];vals.forEach((v,j)=>{const td=document.createElement('td');td.textContent=v;if(j===0)td.className='rank';if(j===1)td.className='player';if(j>=2)td.classList.add('num');if(j===5)td.classList.add('points');tr.appendChild(td)});tbody.appendChild(tr)})}
 document.querySelectorAll('th').forEach(th=>th.addEventListener('click',()=>{const key=th.dataset.key;if(sortKey===key)desc=!desc;else{sortKey=key;desc=key!=='name'}render()}));render();
-</script></body></html>
+</script>
+<script>
+(async function loadLiveTournamentData() {
+  const status = document.createElement("div");
+  status.className = "foot";
+  status.textContent = "Haetaan ajantasaisia tietoja GameResultsOnlinesta…";
+  document.querySelector("main").prepend(status);
+  const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  try {
+    const response = await fetch("/api/data", { cache: "no-store" });
+    if (!response.ok) throw new Error("Tietopalvelu vastasi: " + response.status);
+    const data = await response.json();
+
+    const pointsBody = document.getElementById("rows");
+    let players = Array.isArray(data.players) ? data.players : [];
+    let sortKey = "points", descending = true;
+    function renderPlayers() {
+      const sorted = [...players].sort((a,b) => {
+        const x=a[sortKey], y=b[sortKey];
+        if (sortKey === "points") return (b.points-a.points)||(b.goals-a.goals)||(b.assists-a.assists)||a.name.localeCompare(b.name,"fi");
+        const cmp = typeof x === "string" ? x.localeCompare(y,"fi") : x-y;
+        return (descending ? -cmp : cmp)||(b.points-a.points)||(b.goals-a.goals)||a.name.localeCompare(b.name,"fi");
+      });
+      pointsBody.replaceChildren();
+      sorted.forEach((p,i) => {
+        const tr=document.createElement("tr");
+        if(i<3) tr.className="top3";
+        [i+1,p.name,p.games,p.goals,p.assists,p.points].forEach((v,j)=>{
+          const td=document.createElement("td"); td.textContent=v;
+          if(j===0) td.className="rank";
+          if(j===1) td.className="player";
+          if(j>=2) td.classList.add("num");
+          if(j===5) td.classList.add("points");
+          tr.appendChild(td);
+        });
+        pointsBody.appendChild(tr);
+      });
+    }
+    document.querySelectorAll('th[data-key]').forEach(th => {
+      th.addEventListener("click", () => {
+        const key=th.dataset.key;
+        if(sortKey===key) descending=!descending;
+        else {sortKey=key; descending=key!=="name";}
+        renderPlayers();
+      });
+    });
+    if(players.length) renderPlayers();
+
+    const standings = Array.isArray(data.standings) ? data.standings : [];
+    const groupTable = document.querySelector(".group-table tbody");
+    if(groupTable && standings.length) {
+      groupTable.replaceChildren();
+      standings.forEach(team => {
+        const tr=document.createElement("tr");
+        if(team.name==="Majavan Pamputtajat") tr.className="majavat";
+        const values=[team.position,team.name,team.games,team.wins,team.draws,team.losses,team.goals,team.points];
+        values.forEach((value,i)=>{
+          const td=document.createElement("td"); td.textContent=value;
+          if(i===1) td.className="team";
+          if(i===6) td.className="gf";
+          tr.appendChild(td);
+        });
+        groupTable.appendChild(tr);
+      });
+      const ours=standings.find(t=>t.name==="Majavan Pamputtajat");
+      const sub=document.querySelector(".group-sub");
+      if(ours && sub) sub.textContent=ours.position+". sija · "+ours.games+" ottelua · "+ours.wins+" voittoa · "+ours.points+" pistettä";
+    }
+
+    const matches = Array.isArray(data.matches) ? data.matches : [];
+    const schedule=document.querySelector(".schedule-list");
+    if(schedule && matches.length) {
+      schedule.replaceChildren();
+      matches.forEach(game=>{
+        const card=document.createElement("div");
+        const finished=game.homeGoals!==null && game.awayGoals!==null;
+        card.className="match"+(finished?"":" upcoming");
+        const date=document.createElement("div"); date.className="match-date";
+        date.textContent=[game.date,game.time].filter(Boolean).join(" · ");
+        const teams=document.createElement("div"); teams.className="match-teams";
+        const home=document.createElement("b"); home.textContent=game.home;
+        const away=document.createElement("b"); away.textContent=game.away;
+        const score=document.createElement("span"); score.className=finished?"score":"vs";
+        score.textContent=finished?game.homeGoals+"–"+game.awayGoals:"–";
+        teams.append(home,score,away);
+        const meta=document.createElement("div"); meta.className="match-meta";
+        meta.textContent=[game.group,game.location,game.status].filter(Boolean).join(" · ");
+        card.append(date,teams,meta); schedule.appendChild(card);
+      });
+    }
+    status.textContent="Päivitetty GameResultsOnlinesta: "+new Date(data.updatedAt).toLocaleString("fi-FI");
+  } catch (error) {
+    status.textContent="Live-päivitys ei onnistunut. Näytetään viimeksi sivulle tallennetut tiedot. ("+error.message+")";
+    status.style.color="#ff9a9a";
+  }
+})();
+</script>
+
+</body></html>
