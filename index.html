@@ -115,6 +115,8 @@ document.querySelectorAll('th').forEach(th=>th.addEventListener('click',()=>{con
 
     const pointsBody = document.getElementById("rows");
     let players = Array.isArray(data.players) ? data.players : [];
+    const zeroPointRoster = ["Patrick Hägglund","Tero Ranta","Joni Uusitalo","Julius Suopajärvi","Timo Huttunen","Kimmo Huttunen"];
+    zeroPointRoster.forEach(name => { if (!players.some(p => p.name === name)) players.push({name,games:4,goals:0,assists:0,points:0}); });
     let sortKey = "points", descending = true;
     function renderPlayers() {
       const sorted = [...players].sort((a,b) => {
