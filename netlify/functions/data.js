@@ -23,8 +23,10 @@ function parsePlayers($) {
   const players = [];
   table.find("tr").each((_, tr) => {
     const row = $(tr);
-    const name = txt($, row.find(".statPlayer, .statMember").last());
-    const team = txt($, row.find(".statTeam").first());
+    const nameCell = row.find(".statMember").first().clone();
+    nameCell.find("small").remove();
+    const name = txt($, nameCell);
+    const team = txt($, row.find(".statPlayer").first());
     if (!name || team !== "Majavan Pamputtajat") return;
     players.push({
       name,
