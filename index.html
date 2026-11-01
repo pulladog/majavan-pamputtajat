@@ -56,11 +56,6 @@ th.num,td.num{width:31px;text-align:center;padding-left:1px;padding-right:1px;fo
 </tbody></table>
 <div class="foot">Lähde: <a href="https://www.gameresultsonline.com/kiekko-haukat96/salibandyn-harrastesarja/14221/groups" target="_blank" rel="noopener">GameResultsOnline – C-lohkon tilanne</a>.
 </div></section>
-<section class="panel">
-<h2 class="group-heading">Pistepörssi</h2>
-<div class="table-wrap"><table><thead><tr><th data-key="rank">#</th><th data-key="name">Pelaaja</th><th class="num" data-key="games">O</th><th class="num" data-key="goals">M</th><th class="num" data-key="assists">S</th><th class="num" data-key="points">P</th></tr></thead><tbody id="rows"></tbody></table></div>
-<div class="foot">Lähde: <a href="https://www.gameresultsonline.com/kiekko-haukat96/salibandyn-harrastesarja/14221/statistics" target="_blank" rel="noopener">GameResultsOnline – alkuperäiset tilastot</a>. Tämä tiedosto ei päivity automaattisesti.</div>
-</section>
 <section class="schedule-panel" aria-label="Majavan Pamputtajien otteluohjelma">
 <h2 class="group-heading">Majavan Pamputtajien otteluohjelma</h2>
 <div class="schedule-list">
@@ -74,6 +69,11 @@ th.num,td.num{width:31px;text-align:center;padding-left:1px;padding-right:1px;fo
 <div class="match upcoming"><div class="match-date">Su 20.12.2026 · 11:30</div><div class="match-teams">Kasraittiit <span class="vs">–</span><b>Majavan Pamputtajat</b></div><div class="match-meta">C-lohko · Nalli 1 · Tuleva ottelu</div></div>
 </div>
 <div class="foot">Otteluohjelman lähde: <a href="https://www.gameresultsonline.com/kiekko-haukat96/salibandyn-harrastesarja/14221/games" target="_blank" rel="noopener">GameResultsOnline – otteluohjelma</a>.</div>
+</section>
+<section class="panel">
+<h2 class="group-heading">Pistepörssi</h2>
+<div class="table-wrap"><table><thead><tr><th data-key="rank">#</th><th data-key="name">Pelaaja</th><th class="num" data-key="games">O</th><th class="num" data-key="goals">M</th><th class="num" data-key="assists">S</th><th class="num" data-key="points">P</th></tr></thead><tbody id="rows"></tbody></table></div>
+<div class="foot">Lähde: <a href="https://www.gameresultsonline.com/kiekko-haukat96/salibandyn-harrastesarja/14221/statistics" target="_blank" rel="noopener">GameResultsOnline – alkuperäiset tilastot</a>. Tämä tiedosto ei päivity automaattisesti.</div>
 </section>
 <p class="note">Klikkaa sarakeotsikkoa lajitellaksesi.</p>
 </main>
@@ -106,7 +106,7 @@ document.querySelectorAll('th').forEach(th=>th.addEventListener('click',()=>{con
   const status = document.createElement("div");
   status.className = "foot";
   status.textContent = "Haetaan ajantasaisia tietoja GameResultsOnlinesta…";
-  document.querySelector("main").prepend(status);
+  document.querySelector("main").append(status);
   const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   try {
     const response = await fetch("/api/data", { cache: "no-store" });
